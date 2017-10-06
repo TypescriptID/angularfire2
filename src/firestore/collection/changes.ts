@@ -28,8 +28,7 @@ export function sortedChanges(query: firebase.firestore.Query, events: firebase.
   return fromCollectionRef(query)
     .map(changes => changes.payload.docChanges)
     .scan((current, changes) => combineChanges(current, changes, events), [])
-    .map(changes => changes.map(c => ({ type: c.type, payload: c })))
-    .filter(changes => changes.length > 0);
+    .map(changes => changes.map(c => ({ type: c.type, payload: c })));
 }
 
 /**
@@ -56,8 +55,12 @@ export function combineChanges(current: firebase.firestore.DocumentChange[], cha
  */
 export function combineChange(combined: firebase.firestore.DocumentChange[], change: firebase.firestore.DocumentChange): firebase.firestore.DocumentChange[] {
   switch(change.type) {
-    case 'added': 
-      combined.splice(change.newIndex, 0, change);
+    case 'added':
+      if (combined[change.newIndex] && combined[change.newIndex].doc.id == change.doc.id) {
+        // Not sure why the duplicates are getting fired
+      } else {
+        combined.splice(change.newIndex, 0, change);
+      }
       break;
     case 'modified':
       // When an item changes position we first remove it
