@@ -1,3 +1,55 @@
+<a name="5.0.2"></a>
+## [5.0.2](https://github.com/angular/angularfire2/compare/5.0.1...5.0.2) (2018-09-21)
+
+### Bug Fixes
+
+* **messaging:** Fix for the binding issue and onTokenRefresh for Messaging ([e170da1](https://github.com/angular/angularfire2/commit/e170da1))
+
+
+<a name="5.0.1"></a>
+# [5.0.1](https://github.com/angular/angularfire2/compare/5.0.0...5.0.1) (2018-09-07)
+
+Version 5.0.1 has been released for the deprecated `angularfire2` NPM library; this simply re-exports everything from `@angular/fire`; allowing you to use either `angularfire2` or `@angular/fire` in your imports and `package.json`.
+
+It will have it's dependency pinned to the corresponding minor and will be released alongside future `@angular/fire` releases for the rest of the 5.x series.
+
+
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/angular/angularfire2/compare/5.0.0-rc.12...5.0.0) (2018-09-04)
+
+
+### Bug Fixes
+
+* **firestore:** Better handle enablePersistence failures, esp. for Universal ([#1850](https://github.com/angular/angularfire2/issues/1850)) ([334ba7b](https://github.com/angular/angularfire2/commit/334ba7b))
+* **firestore:** Add document `get()`, the options argument for `get()` should be optional, and subscriptions to `get()` should be run in the Angular Zone([#1849](https://github.com/angular/angularfire2/issues/1849)) ([185943f](https://github.com/angular/angularfire2/commit/185943f))
+
+
+### Breaking changes
+
+5.0 is now final and we're published under `@angular/fire`.
+
+```bash
+npm i --save firebase @angular/fire
+```
+
+
+<a name="5.0.0-rc.12"></a>
+# [5.0.0-rc.12](https://github.com/angular/angularfire2/compare/5.0.0-rc.11...5.0.0-rc.12) (2018-08-24)
+
+### Bug Fixes
+
+* **afs:** Gracefully handle duplicate emissions on modified/deleted ([#1825](https://github.com/angular/angularfire2/issues/1825)) ([76ff6c1](https://github.com/angular/angularfire2/commit/76ff6c1))
+* **core:** If an AngularFire observable was empty or threw, it could block Universal rendering ([#1832](https://github.com/angular/angularfire2/issues/1832)) ([36a8ff8](https://github.com/angular/angularfire2/commit/36a8ff8))
+* **core:** Fix for the Firebase ES export problems in Node ([#1821](https://github.com/angular/angularfire2/issues/1821)) ([f1014ee](https://github.com/angular/angularfire2/commit/f1014ee))
+* **storage:** Fix for zone issues on downloadURL and metadata, which blocked Universal rendering ([#1835](https://github.com/angular/angularfire2/issues/1835)) ([441607a](https://github.com/angular/angularfire2/commit/441607a))
+
+
+### Features
+
+* **firestore:** Added a `get` Observable ([#1824](https://github.com/angular/angularfire2/issues/1824)) ([9f34be8](https://github.com/angular/angularfire2/commit/9f34be8))
+* **messaging:** Introducing AngularFireMessaging ([#1749](https://github.com/angular/angularfire2/issues/1749)) ([26f7613](https://github.com/angular/angularfire2/commit/26f7613))
+
+
 <a name="5.0.0-rc.11"></a>
 # [5.0.0-rc.11](https://github.com/angular/angularfire2/compare/5.0.0-rc.10...5.0.0-rc.11) (2018-06-13)
 
