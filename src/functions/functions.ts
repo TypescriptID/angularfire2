@@ -27,7 +27,7 @@ export class AngularFireFunctions {
     
     this.functions = zone.runOutsideAngular(() => {
       const app = _firebaseAppFactory(options, nameOrConfig);
-      return app.functions(region);
+      return app.functions(region || undefined);
     });
 
   }
