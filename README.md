@@ -2,14 +2,8 @@
 The official [Angular](https://angular.io/) library for [Firebase](https://firebase.google.com/).
 
 ```bash
-ng add @angular/fire@next
+ng add @angular/fire
 ```
-
----
-
-> **WARNING**: Master branch is the work in progress for version 6 of AngularFire. [You can find version 5 here](https://github.com/angular/angularfire/tree/v5), if you're looking for documentation or to contribute to stable. [Learn more about the road toward version 6 here](https://github.com/angular/angularfire/issues/2267).
-
----
 
 ## What is AngularFire?
 
@@ -57,7 +51,7 @@ export class MyApp {
 
 [Contributing](CONTRIBUTING.md)
 
-[Stackblitz Template](https://stackblitz.com/edit/angular-1iment) - Remember to set your Firebase configuration in `app/app.module.ts`.
+[Stackblitz Template](https://stackblitz.com/edit/angular-fire-start) - Remember to set your Firebase configuration in `app/app.module.ts`.
 
 [Upgrading to v6.0? Check out our guide.](docs/version-6-upgrade.md)
 

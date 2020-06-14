@@ -1,16 +1,17 @@
 import { SchematicsException, Tree } from '@angular-devkit/schematics';
 import { experimental } from '@angular-devkit/core';
 import {
+  addDependencies,
   generateFirebaseRc,
-  safeReadJSON,
+  NgAddNormalizedOptions,
   overwriteIfExists,
-  stringifyFormatted,
-  addDependencies, NgAddNormalizedOptions
+  safeReadJSON,
+  stringifyFormatted
 } from './ng-add-common';
-import { FirebaseJSON, FirebaseHostingConfig } from './interfaces';
+import { FirebaseJSON } from './interfaces';
 
 import { default as defaultDependencies, firebaseFunctions as firebaseFunctionsDependencies } from './versions.json';
-import {dirname, join} from 'path';
+import { dirname, join } from 'path';
 
 // We consider a project to be a universal project if it has a `server` architect
 // target. If it does, it knows how to build the application's server.
@@ -41,6 +42,12 @@ function generateHostingConfig(project: string, dist: string) {
   };
 }
 
+function generateFunctionsConfig(dist: string) {
+  return {
+    source: dirname(dist)
+  };
+}
+
 export function generateFirebaseJson(
   tree: Tree,
   path: string,
@@ -52,6 +59,7 @@ export function generateFirebaseJson(
     ? safeReadJSON(path, tree)
     : emptyFirebaseJson(dirname(serverOutput));
 
+  /* TODO do we want to prompt for override?
   if (
     firebaseJson.hosting &&
     ((Array.isArray(firebaseJson.hosting) &&
@@ -61,7 +69,7 @@ export function generateFirebaseJson(
     throw new SchematicsException(
       `Target ${project} already exists in firebase.json`
     );
-  }
+  }*/
 
   const newConfig = generateHostingConfig(project, dist);
   if (firebaseJson.hosting === undefined) {
@@ -69,8 +77,10 @@ export function generateFirebaseJson(
   } else if (Array.isArray(firebaseJson.hosting)) {
     firebaseJson.hosting.push(newConfig);
   } else {
-    firebaseJson.hosting = [firebaseJson.hosting!, newConfig];
+    firebaseJson.hosting = [firebaseJson.hosting, newConfig];
   }
+
+  firebaseJson.functions = generateFunctionsConfig(dist);
 
   overwriteIfExists(tree, path, stringifyFormatted(firebaseJson));
 }
@@ -116,6 +126,11 @@ export const setupUniversalDeployment = (config: {
 
   const staticOutput = project.architect.build.options.outputPath;
   const serverOutput = project.architect.server.options.outputPath;
+
+  // Add @firebase/firestore to externalDependencies
+  const externalDependencies = project.architect.server.options.externalDependencies || [];
+  externalDependencies.push('@firebase/firestore');
+  project.architect.server.options.externalDependencies = externalDependencies;
 
   project.architect.deploy = {
     builder: '@angular/fire:deploy',

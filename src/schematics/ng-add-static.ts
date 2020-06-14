@@ -1,17 +1,16 @@
 import { SchematicsException, Tree } from '@angular-devkit/schematics';
 import { experimental } from '@angular-devkit/core';
 import {
+  addDependencies,
   generateFirebaseRc,
+  NgAddNormalizedOptions,
   overwriteIfExists,
   safeReadJSON,
-  stringifyFormatted,
-  addDependencies, NgAddNormalizedOptions
+  stringifyFormatted
 } from './ng-add-common';
-import { FirebaseJSON, FirebaseHostingConfig } from './interfaces';
+import { FirebaseJSON } from './interfaces';
 
-import {
-  default as defaultDependencies
-} from './versions.json';
+import { default as defaultDependencies } from './versions.json';
 
 function emptyFirebaseJson() {
   return {
@@ -43,6 +42,7 @@ export function generateFirebaseJson(
     ? safeReadJSON(path, tree)
     : emptyFirebaseJson();
 
+  /* TODO do we want to prompt for override?
   if (
     firebaseJson.hosting &&
     ((Array.isArray(firebaseJson.hosting) &&
@@ -52,7 +52,7 @@ export function generateFirebaseJson(
     throw new SchematicsException(
       `Target ${project} already exists in firebase.json`
     );
-  }
+  }*/
 
   const newConfig = generateHostingConfig(project, dist);
   if (firebaseJson.hosting === undefined) {
