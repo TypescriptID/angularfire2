@@ -26,13 +26,13 @@ import { AngularFirestore } from '../firestore';
  * // Subscribe to changes as snapshots. This provides you data updates as well as delta updates.
  * fakeStock.valueChanges().subscribe(value => console.log(value));
  */
-export class AngularFirestoreCollectionGroup<T= DocumentData> {
+export class AngularFirestoreCollectionGroup<T = DocumentData> {
   /**
    * The constructor takes in a CollectionGroupQuery to provide wrapper methods
    * for data operations and data streaming.
    */
   constructor(
-    private readonly query: Query,
+    private readonly query: Query<T>,
     private readonly afs: AngularFirestore) { }
 
   /**
@@ -76,12 +76,28 @@ export class AngularFirestoreCollectionGroup<T= DocumentData> {
 
   /**
    * Listen to all documents in the collection and its possible query as an Observable.
+   *
+   * If the `idField` option is provided, document IDs are included and mapped to the
+   * provided `idField` property name.
    */
-  valueChanges(): Observable<T[]> {
+  valueChanges(): Observable<T[]>;
+  // tslint:disable-next-line:unified-signatures
+  valueChanges({}): Observable<T[]>;
+  valueChanges<K extends string>(options: {idField: K}): Observable<(T & { [T in K]: string })[]>;
+  valueChanges<K extends string>(options: {idField?: K} = {}): Observable<T[]> {
     const fromCollectionRefScheduled$ = fromCollectionRef<T>(this.query, this.afs.schedulers.outsideAngular);
     return fromCollectionRefScheduled$
       .pipe(
-        map(actions => actions.payload.docs.map(a => a.data())),
+        map(actions => actions.payload.docs.map(a => {
+          if (options.idField) {
+            return {
+              [options.idField]: a.id,
+              ...a.data()
+            } as T & { [T in K]: string };
+          } else {
+            return a.data();
+          }
+        })),
         this.afs.keepUnstableUntilFirst
       );
   }

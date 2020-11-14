@@ -1,3 +1,5 @@
+import { RuntimeOptions } from 'firebase-functions';
+
 export interface Project {
   projectId: string;
   projectNumber: string;
@@ -9,6 +11,7 @@ export interface Project {
 export interface FirebaseDeployConfig {
   cwd: string;
   only?: string;
+  token?: string;
 }
 
 export interface FirebaseTools {
@@ -59,9 +62,12 @@ export interface FirebaseRc {
 
 export interface DeployBuilderSchema {
   buildTarget?: string;
+  firebaseProject?: string;
   preview?: boolean;
   universalBuildTarget?: string;
   ssr?: boolean;
+  functionsNodeVersion?: number;
+  functionsRuntimeOptions?: RuntimeOptions;
 }
 
 export interface BuildTarget {

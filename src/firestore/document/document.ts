@@ -28,13 +28,13 @@ import firebase from 'firebase/app';
  * // OR! Transform using Observable.from() and the data is unwrapped for you
  * Observable.from(fakeStock).subscribe(value => console.log(value));
  */
-export class AngularFirestoreDocument<T= DocumentData> {
+export class AngularFirestoreDocument<T = DocumentData> {
 
   /**
-   * The contstuctor takes in a DocumentReference to provide wrapper methods
+   * The constructor takes in a DocumentReference to provide wrapper methods
    * for data operations, data streaming, and Symbol.observable.
    */
-  constructor(public ref: DocumentReference, private afs: AngularFirestore) { }
+  constructor(public ref: DocumentReference<T>, private afs: AngularFirestore) { }
 
   /**
    * Create or overwrite a single document.
@@ -61,10 +61,10 @@ export class AngularFirestoreDocument<T= DocumentData> {
    * Create a reference to a sub-collection given a path and an optional query
    * function.
    */
-  collection<R= DocumentData>(path: string, queryFn?: QueryFn): AngularFirestoreCollection<R> {
-    const collectionRef = this.ref.collection(path);
+  collection<R = DocumentData>(path: string, queryFn?: QueryFn): AngularFirestoreCollection<R> {
+    const collectionRef = this.ref.collection(path) as firebase.firestore.CollectionReference<R>;
     const { ref, query } = associateQuery(collectionRef, queryFn);
-    return new AngularFirestoreCollection<R>(ref, query, this.afs);
+    return new AngularFirestoreCollection(ref, query, this.afs);
   }
 
   /**
@@ -79,12 +79,20 @@ export class AngularFirestoreDocument<T= DocumentData> {
 
   /**
    * Listen to unwrapped snapshot updates from the document.
+   *
+   * If the `idField` option is provided, document IDs are included and mapped to the
+   * provided `idField` property name.
    */
-  valueChanges(): Observable<T|undefined> {
+  valueChanges(options?: { }): Observable<T | undefined>;
+  valueChanges<K extends string>(options: { idField: K }): Observable<(T & { [T in K]: string }) | undefined>;
+  valueChanges<K extends string>(options: { idField?: K } = {}): Observable<T | undefined> {
     return this.snapshotChanges().pipe(
-      map(action => {
-        return action.payload.data();
-      })
+      map(({ payload }) =>
+        options.idField ? {
+          ...payload.data(),
+          ...{ [options.idField]: payload.id }
+        } as T & { [T in K]: string } : payload.data()
+      )
     );
   }
 

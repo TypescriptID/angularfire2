@@ -2,7 +2,7 @@ import { AngularFireModule, FirebaseApp } from '@angular/fire';
 import { AngularFirestore, SETTINGS } from '../firestore';
 import { AngularFirestoreModule } from '../firestore.module';
 import { AngularFirestoreCollection } from './collection';
-import { QueryFn } from '../interfaces';
+import { QueryFn, CollectionReference } from '../interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { skip, switchMap, take } from 'rxjs/operators';
 import 'firebase/firestore';
@@ -22,9 +22,9 @@ import {
   Stock
 } from '../utils.spec';
 
-async function collectionHarness(afs: AngularFirestore, items: number, queryFn?: QueryFn) {
+async function collectionHarness(afs: AngularFirestore, items: number, queryFn?: QueryFn<Stock>) {
   const randomCollectionName = randomName(afs.firestore);
-  const ref = afs.firestore.collection(`${randomCollectionName}`);
+  const ref = afs.firestore.collection(`${randomCollectionName}`) as CollectionReference<Stock>;
   if (!queryFn) {
     queryFn = (ref) => ref;
   }
@@ -273,6 +273,7 @@ describe('AngularFirestoreCollection', () => {
       delayAdd(stocks, nextId, { price: 2 });
     });
 
+    /* TODO(jamesdaniels): revisit this now that we have metadata
     it('should be able to filter snapshotChanges() types - added/modified', async (done) => {
       const ITEMS = 10;
       const harness = await collectionHarness(afs, ITEMS);
@@ -304,6 +305,7 @@ describe('AngularFirestoreCollection', () => {
       names = names.concat([nextId]);
       delayAdd(stocks, nextId, { price: 2 });
     });
+    */
 
     it('should be able to filter snapshotChanges() types - removed', async (done) => {
       const ITEMS = 10;
