@@ -10,12 +10,13 @@ import {
   FirebaseOptions,
   ɵAngularFireSchedulers,
   ɵfirebaseAppFactory,
-  ɵkeepUnstableUntilFirstFactory
+  ɵkeepUnstableUntilFirstFactory,
 } from '@angular/fire';
 import { Observable } from 'rxjs';
 import 'firebase/database';
-import { registerDatabase } from '@firebase/database';
+import { USE_EMULATOR as USE_AUTH_EMULATOR } from '@angular/fire/auth';
 import firebase from 'firebase/app';
+import { ɵfetchInstance, ɵlogAuthEmulatorError } from '@angular/fire';
 
 export const URL = new InjectionToken<string>('angularfire2.realtimeDatabaseURL');
 
@@ -42,26 +43,29 @@ export class AngularFireDatabase {
     @Inject(PLATFORM_ID) platformId: Object,
     zone: NgZone,
     @Optional() @Inject(USE_EMULATOR) _useEmulator: any, // tuple isn't working here
+    @Optional() @Inject(USE_AUTH_EMULATOR) useAuthEmulator: any,
   ) {
     this.schedulers = new ɵAngularFireSchedulers(zone);
     this.keepUnstableUntilFirst = ɵkeepUnstableUntilFirstFactory(this.schedulers);
 
-    this.database = zone.runOutsideAngular(() => {
-      const app = ɵfirebaseAppFactory(options, zone, nameOrConfig);
-      if (registerDatabase) {
-        registerDatabase(firebase as any);
-      }
-      const database = app.database(databaseURL || undefined);
-      const useEmulator: UseEmulatorArguments | null = _useEmulator;
+    const useEmulator: UseEmulatorArguments | null = _useEmulator;
+    const app = ɵfirebaseAppFactory(options, zone, nameOrConfig);
+
+    if (!firebase.auth && useAuthEmulator) {
+      ɵlogAuthEmulatorError();
+    }
+
+    this.database = ɵfetchInstance(`${app.name}.database.${databaseURL}`, 'AngularFireDatabase', app, () => {
+      const database = zone.runOutsideAngular(() => app.database(databaseURL || undefined));
       if (useEmulator) {
         database.useEmulator(...useEmulator);
       }
       return database;
-    });
+    }, [useEmulator]);
   }
 
   list<T>(pathOrRef: PathReference, queryFn?: QueryFn): AngularFireList<T> {
-    const ref = getRef(this.database, pathOrRef);
+    const ref = this.schedulers.ngZone.runOutsideAngular(() => getRef(this.database, pathOrRef));
     let query: DatabaseQuery = ref;
     if (queryFn) {
       query = queryFn(ref);
@@ -70,12 +74,13 @@ export class AngularFireDatabase {
   }
 
   object<T>(pathOrRef: PathReference): AngularFireObject<T> {
-    const ref = getRef(this.database, pathOrRef);
+    const ref = this.schedulers.ngZone.runOutsideAngular(() => getRef(this.database, pathOrRef));
     return createObjectReference<T>(ref, this);
   }
 
   createPushId() {
-    return this.database.ref().push().key;
+    const ref = this.schedulers.ngZone.runOutsideAngular(() => this.database.ref());
+    return ref.push().key;
   }
 
 }

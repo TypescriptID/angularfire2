@@ -20,7 +20,7 @@ import {
 
 import { FirestoreComponent } from './firestore/firestore.component';
 import { AngularFireDatabaseModule, USE_EMULATOR as USE_DATABASE_EMULATOR } from '@angular/fire/database';
-import { AngularFirestoreModule, USE_EMULATOR as USE_FIRESTORE_EMULATOR } from '@angular/fire/firestore';
+import { AngularFirestoreModule, USE_EMULATOR as USE_FIRESTORE_EMULATOR, SETTINGS as FIRESTORE_SETTINGS } from '@angular/fire/firestore';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule, USE_DEVICE_LANGUAGE, USE_EMULATOR as USE_AUTH_EMULATOR } from '@angular/fire/auth';
 import { AngularFireMessagingModule, SERVICE_WORKER, VAPID_KEY } from '@angular/fire/messaging';
@@ -35,18 +35,23 @@ import { HomeComponent } from './home/home.component';
 import { AuthComponent } from './auth/auth.component';
 import { MessagingComponent } from './messaging/messaging.component';
 import { FunctionsComponent } from './functions/functions.component';
+import { FirestoreOfflineComponent } from './firestore-offline/firestore-offline.component';
+import { FirestoreOfflineModule } from './firestore-offline/firestore-offline.module';
+import { UpboatsComponent } from './upboats/upboats.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     StorageComponent,
     FirestoreComponent,
+    FirestoreOfflineComponent,
     DatabaseComponent,
     RemoteConfigComponent,
     HomeComponent,
     AuthComponent,
     MessagingComponent,
     FunctionsComponent,
+    UpboatsComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
@@ -56,7 +61,7 @@ import { FunctionsComponent } from './functions/functions.component';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireStorageModule,
     AngularFireDatabaseModule,
-    AngularFirestoreModule.enablePersistence({ synchronizeTabs: true }),
+    AngularFirestoreModule,
     AngularFireAuthModule,
     AngularFireAuthGuardModule,
     AngularFireRemoteConfigModule,
@@ -64,13 +69,14 @@ import { FunctionsComponent } from './functions/functions.component';
     AngularFireAnalyticsModule,
     AngularFireFunctionsModule,
     AngularFirePerformanceModule,
-    AngularFireAuthGuardModule
+    FirestoreOfflineModule
   ],
   providers: [
     UserTrackingService,
     ScreenTrackingService,
     PerformanceMonitoringService,
-    { provide: ANALYTICS_DEBUG_MODE, useValue: false },
+    { provide: FIRESTORE_SETTINGS, useValue: { ignoreUndefinedProperties: true } },
+    { provide: ANALYTICS_DEBUG_MODE, useValue: true },
     { provide: COLLECTION_ENABLED, useValue: true },
     { provide: USE_AUTH_EMULATOR, useValue: environment.useEmulators ? ['localhost', 9099] : undefined },
     { provide: USE_DATABASE_EMULATOR, useValue: environment.useEmulators ? ['localhost', 9000] : undefined },
@@ -82,7 +88,9 @@ import { FunctionsComponent } from './functions/functions.component';
     { provide: REMOTE_CONFIG_DEFAULTS, useValue: { background_color: 'red' } },
     { provide: USE_DEVICE_LANGUAGE, useValue: true },
     { provide: VAPID_KEY, useValue: environment.vapidKey },
-    { provide: SERVICE_WORKER, useFactory: () => navigator?.serviceWorker?.getRegistration() ?? undefined },
+    { provide: SERVICE_WORKER, useFactory: () =>
+      (typeof navigator !== 'undefined' && navigator.serviceWorker?.getRegistration()) ?? undefined
+    },
     { provide: APP_VERSION, useValue: '0.0.0' },
     { provide: APP_NAME, useValue: 'Angular' }
   ],
