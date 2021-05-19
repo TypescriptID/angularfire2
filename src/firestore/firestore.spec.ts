@@ -1,8 +1,5 @@
 import { AngularFireModule, FIREBASE_APP_NAME, FIREBASE_OPTIONS, FirebaseApp } from '@angular/fire';
-import { AngularFirestore, SETTINGS } from './firestore';
-import { AngularFirestoreModule } from './firestore.module';
-import { AngularFirestoreDocument } from './document/document';
-import { AngularFirestoreCollection } from './collection/collection';
+import { AngularFirestore, SETTINGS, AngularFirestoreModule, AngularFirestoreDocument, AngularFirestoreCollection } from '@angular/fire/firestore';
 
 import { TestBed } from '@angular/core/testing';
 import { COMMON_CONFIG } from '../test-config';
@@ -29,7 +26,7 @@ describe('AngularFirestore', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   it('should be the properly initialized type', () => {
@@ -121,7 +118,7 @@ describe('AngularFirestore with different app', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   describe('<constructor>', () => {
@@ -162,7 +159,7 @@ describe('AngularFirestore without persistance', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   it('should not enable persistence', (done) => {

@@ -1,6 +1,6 @@
 import firebase from 'firebase/app';
 import { AngularFireModule, FirebaseApp } from '@angular/fire';
-import { AngularFireDatabase, AngularFireDatabaseModule, ChildEvent, snapshotChanges, URL } from '../public_api';
+import { AngularFireDatabase, AngularFireDatabaseModule, ChildEvent, snapshotChanges, URL } from '@angular/fire/database';
 import { TestBed } from '@angular/core/testing';
 import { COMMON_CONFIG } from '../../test-config';
 import { BehaviorSubject } from 'rxjs';
@@ -37,7 +37,7 @@ describe('snapshotChanges', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   function prepareSnapshotChanges(opts: { events?: ChildEvent[], skipnumber: number } = { skipnumber: 0 }) {

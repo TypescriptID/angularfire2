@@ -1,5 +1,5 @@
 import { AngularFireModule, FIREBASE_APP_NAME, FIREBASE_OPTIONS, FirebaseApp } from '@angular/fire';
-import { AngularFireDatabase, AngularFireDatabaseModule, URL } from './public_api';
+import { AngularFireDatabase, AngularFireDatabaseModule, URL } from '@angular/fire/database';
 import { TestBed } from '@angular/core/testing';
 import { COMMON_CONFIG } from '../test-config';
 import { NgZone } from '@angular/core';
@@ -30,7 +30,7 @@ describe('AngularFireDatabase', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   describe('<constructor>', () => {
@@ -85,7 +85,7 @@ describe('AngularFireDatabase w/options', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   describe('<constructor>', () => {

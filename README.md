@@ -43,10 +43,12 @@ export class MyApp {
 
 ### Angular and Firebase versions
 
-AngularFire doesn't follow Angular's versioning as Firebase also has breaking changes throughout the year. Instead we try to maintain compatability with both Firebase and Angular majors for as long as possible, only breaking when we need to support a new major of one or the other.
+AngularFire doesn't follow Angular's versioning as Firebase also has breaking changes throughout the year. Instead we try to maintain compatibility with both Firebase and Angular majors for as long as possible, only breaking when we need to support a new major of one or the other.
 
 | Angular | Firebase | AngularFire  |
 | --------|----------|--------------|
+| 12      | [9 <sup>beta</sup>](https://firebase.google.com/docs/web/learn-more#modular-version) | [^7.0 <sup>beta</sup>](https://github.com/angular/angularfire/tree/exp) |
+| 12      | 7,8      | ^6.1.5       |
 | 11      | 7,8      | ^6.1         |
 | 10      | 8        | ^6.0.4       |
 | 10      | 7        | ^6.0.3       |
@@ -79,7 +81,7 @@ Neither AngularFire or Firebase ship with polyfills. To have compatability acros
 
 [Upgrading to v6.0? Check out our guide.](docs/version-6-upgrade.md)
 
-**Having troubles?** Get help on the official [Firebase Mailing List](https://groups.google.com/forum/#!forum/firebase-talk), the [Firebase Community Slack](https://firebase.community/) (`#angularfire2`), the [Angular Community Discord](http://discord.gg/angular) (`#firebase`), [Gitter](https://gitter.im/angular/angularfire2), or [Stack Overflow](https://stackoverflow.com/questions/tagged/angularfire2).
+**Having troubles?** Get help on our [Q&A board](https://github.com/angular/angularfire/discussions?discussions_q=category%3AQ%26A), the official [Firebase Mailing List](https://groups.google.com/forum/#!forum/firebase-talk), the [Firebase Community Slack](https://firebase.community/) (`#angularfire2`), the [Angular Community Discord](http://discord.gg/angular) (`#firebase`), [Gitter](https://gitter.im/angular/angularfire2), the [Firebase subreddit](https://www.reddit.com/r/firebase), or [Stack Overflow](https://stackoverflow.com/questions/tagged/angularfire2).
 
 > **NOTE:** AngularFire is maintained by Googlers but is not a supported Firebase product. Questions on the mailing list and issues filed here are answered on a <strong>best-effort basis</strong> by maintainers and other community members. If you are able to reproduce a problem with Firebase <em>outside of AngularFire's implementation</em>, please [file an issue on the Firebase JS SDK](https://github.com/firebase/firebase-js-sdk/issues) or reach out to the personalized [Firebase support channel](https://firebase.google.com/support/).
 

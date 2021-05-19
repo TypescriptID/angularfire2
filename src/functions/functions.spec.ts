@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AngularFireModule, FIREBASE_APP_NAME, FIREBASE_OPTIONS, FirebaseApp } from '@angular/fire';
-import { AngularFireFunctions, AngularFireFunctionsModule, ORIGIN, REGION } from './public_api';
+import { AngularFireFunctions, AngularFireFunctionsModule, ORIGIN, REGION } from '@angular/fire/functions';
 import { COMMON_CONFIG } from '../test-config';
 import 'firebase/functions';
 import { rando } from '../firestore/utils.spec';
@@ -22,7 +22,7 @@ describe('AngularFireFunctions', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   it('should exist', () => {
@@ -60,7 +60,7 @@ describe('AngularFireFunctions with different app', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   describe('<constructor>', () => {

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AngularFireModule, FIREBASE_APP_NAME, FIREBASE_OPTIONS, FirebaseApp } from '@angular/fire';
-import { AngularFireRemoteConfig, AngularFireRemoteConfigModule, DEFAULTS, SETTINGS } from './public_api';
+import { AngularFireRemoteConfig, AngularFireRemoteConfigModule, DEFAULTS, SETTINGS } from '@angular/fire/remote-config';
 import { COMMON_CONFIG } from '../test-config';
 import { rando } from '../firestore/utils.spec';
 
@@ -21,7 +21,7 @@ describe('AngularFireRemoteConfig', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   it('should be exist', () => {
@@ -59,7 +59,7 @@ describe('AngularFireRemoteConfig with different app', () => {
   });
 
   afterEach(() => {
-    app.delete();
+    app.delete().catch();
   });
 
   describe('<constructor>', () => {
