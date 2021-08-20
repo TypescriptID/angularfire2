@@ -1,31 +1,67 @@
-import { ApplicationRef, Component } from '@angular/core';
-import { FirebaseApp } from '@angular/fire';
-import { debounceTime } from 'rxjs/operators';
+import { ApplicationRef, Component, NgZone } from '@angular/core';
+import { FirebaseApp, FirebaseApps } from '@angular/fire/app';
+import { Auth, AuthInstances, authState } from '@angular/fire/auth';
+import { Firestore as FirestoreLite, FirestoreInstances as FirestoreLiteInstances, getDoc, doc, DocumentSnapshot } from '@angular/fire/firestore/lite';
+import { Firestore, FirestoreInstances } from '@angular/fire/firestore';
+import { DocumentData } from 'rxfire/firestore/lite/interfaces';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Storage, StorageInstances } from '@angular/fire/storage';
+import { Messaging, MessagingInstances } from '@angular/fire/messaging';
+import { RemoteConfig, RemoteConfigInstances } from '@angular/fire/remote-config';
+import { Functions, FunctionsInstances } from '@angular/fire/functions';
+import { Database, DatabaseInstances } from '@angular/fire/database';
+import { Analytics, AnalyticsInstances } from '@angular/fire/analytics';
+import { Performance, PerformanceInstances } from '@angular/fire/performance';
 
 @Component({
   selector: 'app-root',
   template: `
-    <h1>AngularFire kitchen sink</h1>
-    <h2>Primary outlet</h2>
-    <nav>
-      <a [routerLink]="[{ outlets: { primary: [] }}]">Home</a> |
-      <a [routerLink]="[{ outlets: { primary: ['protected'] }}]">Protected</a> |
-      <a [routerLink]="[{ outlets: { primary: ['lazy'] }}]">Lazy</a> |
-      <a [routerLink]="[{ outlets: { primary: ['protected-lazy'] }}]">Protected Lazy</a> |
-      <a [routerLink]="[{ outlets: { primary: ['protected-lazy', 'asdf'] }}]">Protected Lazy Deep</a> |
-      <a [routerLink]="[{ outlets: { primary: ['protected-lazy', '1', 'bob'] }}]">Protected Lazy Deep</a></nav>
+    <pre>{{ (myDocData | async)?.data() | json }}</pre>
     <router-outlet></router-outlet>
-    <h2>Secondary outlet</h2>
-    <nav><a [routerLink]="[{ outlets: { secondary: [] }}]">Home</a> | <a [routerLink]="[{ outlets: { secondary: ['protected'] }}]">Protected</a> | <a [routerLink]="[{ outlets: { secondary: ['protected-lazy'] }}]">Protected Lazy (no anonymous)</a></nav>
-    <router-outlet name="secondary"></router-outlet>
-    <h2>Yet anther outlet</h2>
-    <nav><a [routerLink]="[{ outlets: { tertiary: [] }}]">Home</a> | <a [routerLink]="[{ outlets: { tertiary: ['protected'] }}]">Protected</a></nav>
-    <router-outlet name="tertiary"></router-outlet>
   `,
-  styles: [``]
+  styles: []
 })
 export class AppComponent {
-  constructor(public readonly firebaseApp: FirebaseApp, appRef: ApplicationRef) {
-    appRef.isStable.pipe(debounceTime(200)).subscribe(it => console.log('isStable', it));
+  myDocData: Promise<DocumentSnapshot<DocumentData>>;
+  title = 'sample';
+  constructor(
+    app: FirebaseApp, // default Firebase App
+    auth: Auth, // default Firbase Auth
+    apps: FirebaseApps, // all initialized App instances
+    authInstances: AuthInstances, // all initialized Auth instances
+    firestoreLite: FirestoreLite,
+    firestoreLiteInstances: FirestoreLiteInstances,
+    firestore: Firestore,
+    firestoreInstances: FirestoreInstances,
+    storage: Storage,
+    storageInstances: StorageInstances,
+    messaging: Messaging,
+    messagingInstances: MessagingInstances,
+    remoteConfig: RemoteConfig,
+    remoteConfigInstances: RemoteConfigInstances,
+    functions: Functions,
+    functionsInstances: FunctionsInstances,
+    database: Database,
+    databaseInstances: DatabaseInstances,
+    analytics: Analytics,
+    analyticsInstances: AnalyticsInstances,
+    performance: Performance,
+    performanceInstances: PerformanceInstances,
+    appRef: ApplicationRef,
+    zone: NgZone,
+  ) {
+    console.log({
+      app, auth, apps, authInstances, firestore, firestoreInstances,
+      firestoreLite, firestoreLiteInstances, storage, storageInstances,
+      messaging, messagingInstances, performance, performanceInstances,
+      analytics, analyticsInstances, functions, functionsInstances, database,
+      databaseInstances, remoteConfig, remoteConfigInstances
+    });
+    authState(auth).subscribe(it => console.log('authState', it));
+    appRef.isStable.pipe(distinctUntilChanged()).subscribe(it => console.log('isStable', it));
+    this.myDocData = getDoc(doc(firestoreLite, 'animals/NJdGQCv1P92SWsp4nSE7'));
+    console.log((app as any).container);
+    // firestoreInstance$.subscribe(it => console.log('$', it));
+    // initializeFirestore$.subscribe(it => console.log('init', it));
   }
 }
