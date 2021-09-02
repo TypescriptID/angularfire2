@@ -8,8 +8,6 @@ import { FirebaseApp } from '@angular/fire/compat';
 import { isPlatformBrowser } from '@angular/common';
 import { proxyPolyfillCompat } from './base';
 
-// SEMVER @ v6, drop and move core ng metrics to a service
-export const AUTOMATICALLY_TRACE_CORE_NG_METRICS = new InjectionToken<boolean>('angularfire2.performance.auto_trace');
 export const INSTRUMENTATION_ENABLED = new InjectionToken<boolean>('angularfire2.performance.instrumentationEnabled');
 export const DATA_COLLECTION_ENABLED = new InjectionToken<boolean>('angularfire2.performance.dataCollectionEnabled');
 
@@ -54,7 +52,7 @@ export class AngularFirePerformance {
 }
 
 const trace$ = (traceId: string) => {
-  if (typeof window !== 'undefined' && window.performance) {
+  if (typeof window !== 'undefined' && window.performance && window.performance.mark) {
     const entries = window.performance.getEntriesByName(traceId, 'measure') || [];
     const startMarkName = `_${traceId}Start[${entries.length}]`;
     const endMarkName = `_${traceId}End[${entries.length}]`;
