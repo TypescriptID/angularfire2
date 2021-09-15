@@ -9,7 +9,7 @@ import * as glob from 'glob';
 
 // TODO infer these from the package.json
 const MODULES = [
-  'core', 'app', 'compat', 'analytics', 'auth', 'database', 'firestore', 'functions',
+  'core', 'app', 'app-check', 'compat', 'analytics', 'auth', 'database', 'firestore', 'functions',
   'remote-config', 'storage', 'messaging', 'performance', 'compat/analytics',
   'compat/auth-guard', 'compat/auth', 'compat/database', 'compat/firestore',
   'compat/functions', 'compat/remote-config', 'compat/storage', 'compat/messaging',
@@ -60,6 +60,7 @@ ${zoneWrapped.map(([importName, exportName]) => `export const ${exportName} = ɵ
   return Promise.all([
     reexport('analytics', 'firebase', 'firebase/analytics', tsKeys<typeof import('firebase/analytics')>()),
     reexport('app', 'firebase', 'firebase/app', tsKeys<typeof import('firebase/app')>()),
+    reexport('app-check', 'firebase', 'firebase/app-check', tsKeys<typeof import('firebase/app-check')>()),
     reexport('auth', 'rxfire', 'rxfire/auth', tsKeys<typeof import('rxfire/auth')>()),
     reexport('auth', 'firebase', 'firebase/auth', tsKeys<typeof import('firebase/auth')>(), {
       debugErrorMap: null,
@@ -160,11 +161,11 @@ async function replaceSchematicVersions() {
   const root = await rootPackage;
   const path = dest('schematics', 'versions.json');
   const dependencies = await import(path);
-  Object.keys(dependencies.default).forEach(name => {
-    dependencies.default[name].version = root.dependencies[name] || root.devDependencies[name];
+  Object.keys(dependencies.peerDependencies).forEach(name => {
+    dependencies.peerDependencies[name].version = root.dependencies[name] || root.devDependencies[name];
   });
-  Object.keys(dependencies.firebaseFunctions).forEach(name => {
-    dependencies.firebaseFunctions[name].version = root.dependencies[name] || root.devDependencies[name];
+  Object.keys(dependencies.firebaseFunctionsDependencies).forEach(name => {
+    dependencies.firebaseFunctionsDependencies[name].version = root.dependencies[name] || root.devDependencies[name];
   });
   return writeFile(path, JSON.stringify(dependencies, null, 2));
 }
@@ -180,6 +181,8 @@ async function compileSchematics() {
     copy(src('schematics', 'collection.json'), dest('schematics', 'collection.json')),
     copy(src('schematics', 'migration.json'), dest('schematics', 'migration.json')),
     copy(src('schematics', 'deploy', 'schema.json'), dest('schematics', 'deploy', 'schema.json')),
+    copy(src('schematics', 'add', 'schema.json'), dest('schematics', 'add', 'schema.json')),
+    copy(src('schematics', 'setup', 'schema.json'), dest('schematics', 'setup', 'schema.json')),
     replaceSchematicVersions()
   ]);
 }
