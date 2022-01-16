@@ -1,3 +1,4 @@
+import { asWindowsPath, normalize } from '@angular-devkit/core';
 import { SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import {
   getWorkspace, getProject, getFirebaseProjectNameFromHost, addEnvironmentEntry,
@@ -32,7 +33,7 @@ export const setupProject =
 
     const { project, projectName } = getProject(config, tree);
 
-    const sourcePath = [project.root, project.sourceRoot].filter(it => !!it).join('/');
+    const sourcePath = project.sourceRoot ?? project.root;
 
     addIgnoreFiles(tree);
 
@@ -105,6 +106,8 @@ ${Object.entries(config.sdkConfig).reduce(
           });
         default: throw(new SchematicsException(`Unimplemented PROJECT_TYPE ${config.projectType}`));
       }
+    } else {
+      return Promise.resolve();
     }
 };
 
@@ -113,7 +116,8 @@ export const ngAddSetupProject = (
 ) => async (host: Tree, context: SchematicContext) => {
 
   // TODO is there a public API for this?
-  const projectRoot: string = (host as any)._backend._root;
+  let projectRoot: string = (host as any)._backend._root;
+  if (process.platform.startsWith('win32')) { projectRoot = asWindowsPath(normalize(projectRoot)); }
 
   const features = await featuresPrompt();
 
@@ -131,7 +135,7 @@ export const ngAddSetupProject = (
 
     const [ defaultProjectName ] = getFirebaseProjectNameFromHost(host, ngProjectName);
 
-    const firebaseProject = await projectPrompt(defaultProjectName, { projectRoot });
+    const firebaseProject = await projectPrompt(defaultProjectName, { projectRoot, account: user.email });
 
     let hosting = { projectType: PROJECT_TYPE.Static, prerender: false };
     let firebaseHostingSite: FirebaseHostingSite|undefined;

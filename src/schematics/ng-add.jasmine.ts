@@ -104,6 +104,15 @@ const initialFirebaseJson = `{
               \"value\": \"public,max-age=31536000,immutable\"
             }
           ]
+        },
+        {
+          \"source\": \"/@(ngsw-worker.js|ngsw.json)\",
+          \"headers\": [
+            {
+              \"key\": \"Cache-Control\",
+              \"value\": \"no-cache\"
+            }
+          ]
         }
       ],
       \"rewrites\": [
@@ -182,6 +191,15 @@ const overwriteFirebaseJson = `{
             {
               \"key\": \"Cache-Control\",
               \"value\": \"public,max-age=31536000,immutable\"
+            }
+          ]
+        },
+        {
+          \"source\": \"/@(ngsw-worker.js|ngsw.json)\",
+          \"headers\": [
+            {
+              \"key\": \"Cache-Control\",
+              \"value\": \"no-cache\"
             }
           ]
         }
@@ -264,6 +282,15 @@ const projectFirebaseJson = `{
               \"value\": \"public,max-age=31536000,immutable\"
             }
           ]
+        },
+        {
+          \"source\": \"/@(ngsw-worker.js|ngsw.json)\",
+          \"headers\": [
+            {
+              \"key\": \"Cache-Control\",
+              \"value\": \"no-cache\"
+            }
+          ]
         }
       ],
       \"rewrites\": [
@@ -286,6 +313,15 @@ const projectFirebaseJson = `{
             {
               \"key\": \"Cache-Control\",
               \"value\": \"public,max-age=31536000,immutable\"
+            }
+          ]
+        },
+        {
+          \"source\": \"/@(ngsw-worker.js|ngsw.json)\",
+          \"headers\": [
+            {
+              \"key\": \"Cache-Control\",
+              \"value\": \"no-cache\"
             }
           ]
         }
@@ -379,6 +415,12 @@ const universalFirebaseJson = {
         key: 'Cache-Control',
         value: 'public,max-age=31536000,immutable'
       }]
+    }, {
+      source: '/@(ngsw-worker.js|ngsw.json)',
+      headers: [{
+        key: 'Cache-Control',
+        value: 'no-cache',
+      }],
     }],
     rewrites: [
       {
@@ -424,6 +466,20 @@ describe('ng-add', () => {
       expect(result.read('firebase.json').toString()).toEqual(overwriteFirebaseJson);
       expect(result.read('.firebaserc').toString()).toEqual(overwriteFirebaserc);
       expect(result.read('angular.json').toString()).toEqual(overwriteAngularJson);
+    });
+    
+    it('runs if source root is relative to workspace root', async () => {
+      const angularJson = generateAngularJson();
+      const project: {root: string, sourceRoot?: string} = angularJson.projects[PROJECT_NAME];
+      project.sourceRoot = `${project.root}/src`;
+      tree.overwrite('angular.json', JSON.stringify(angularJson));
+      const promise = setupProject(tree, {} as any, [FEATURES.Hosting], {
+        firebaseProject: { projectId: FIREBASE_PROJECT } as any,
+        projectType: PROJECT_TYPE.Static,
+        project: undefined,
+        prerender: false,
+      });
+      await expectAsync(promise).toBeResolved();
     });
 
     it('overrides existing files', async () => {

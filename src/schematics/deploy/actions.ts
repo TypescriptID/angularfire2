@@ -70,7 +70,7 @@ const deployToHosting = async (
   options: DeployBuilderOptions,
   firebaseToken?: string,
 ) => {
-  
+
   // tslint:disable-next-line:no-non-null-assertion
   const siteTarget = options.target ?? context.target!.project;
 
@@ -110,11 +110,12 @@ const defaultFsHost: FSHost = {
   renameSync,
   copySync,
   removeSync,
+  existsSync,
 };
 
-const findPackageVersion = (name: string) => {
-  const match = execSync(`npm list ${name}`).toString().match(` ${escapeRegExp(name)}@.+\\w`);
-  return match ? match[0].split(`${name}@`)[1].split(/\s/)[0] : null;
+const findPackageVersion = (packageManager: string, name: string) => {
+  const match = execSync(`${packageManager} list ${name}`).toString().match(`[^|\s]${escapeRegExp(name)}[@| ][^\s]+(\s.+)?$`);
+  return match ? match[0].split(new RegExp(`${escapeRegExp(name)}[@| ]`))[1].split(/\s/)[0] : null;
 };
 
 const getPackageJson = (context: BuilderContext, workspaceRoot: string, options: DeployBuilderOptions, main?: string) => {
@@ -128,13 +129,14 @@ const getPackageJson = (context: BuilderContext, workspaceRoot: string, options:
   }
   if (existsSync(join(workspaceRoot, 'angular.json'))) {
     const angularJson = JSON.parse(readFileSync(join(workspaceRoot, 'angular.json')).toString());
+    const packageManager = angularJson.cli?.packageManager ?? 'npm';
     // tslint:disable-next-line:no-non-null-assertion
     const server = angularJson.projects[context.target!.project].architect.server;
     const externalDependencies = server?.options?.externalDependencies || [];
     const bundleDependencies = server?.options?.bundleDependencies ?? true;
     if (bundleDependencies) {
       externalDependencies.forEach(externalDependency => {
-        const packageVersion = findPackageVersion(externalDependency);
+        const packageVersion = findPackageVersion(packageManager, externalDependency);
         if (packageVersion) { dependencies[externalDependency] = packageVersion; }
       });
     } else {
@@ -175,14 +177,14 @@ export const deployToFunction = async (
     );
   }
 
-  const staticOut = staticBuildOptions.outputPath;
-  const serverOut = serverBuildOptions.outputPath;
+  const staticOut = join(workspaceRoot, staticBuildOptions.outputPath);
+  const serverOut = join(workspaceRoot, serverBuildOptions.outputPath);
 
-  const functionsOut = options.outputPath || dirname(serverOut);
+  const functionsOut = options.outputPath ? join(workspaceRoot, options.outputPath) : dirname(serverOut);
   const functionName = options.functionName || DEFAULT_FUNCTION_NAME;
 
-  const newStaticOut = join(functionsOut, staticOut);
-  const newServerOut = join(functionsOut, serverOut);
+  const newStaticOut = join(functionsOut, staticBuildOptions.outputPath);
+  const newServerOut = join(functionsOut, serverBuildOptions.outputPath);
 
   // New behavior vs. old
   if (options.outputPath) {
@@ -203,14 +205,15 @@ export const deployToFunction = async (
     );
   }
 
+  const functionsPackageJsonPath = join(functionsOut, 'package.json');
   fsHost.writeFileSync(
-    join(functionsOut, 'package.json'),
+    functionsPackageJsonPath,
     JSON.stringify(packageJson, null, 2)
   );
 
   fsHost.writeFileSync(
     join(functionsOut, 'index.js'),
-    defaultFunction(serverOut, options, functionName)
+    defaultFunction(serverBuildOptions.outputPath, options, functionName)
   );
 
   if (!options.prerender) {
@@ -224,6 +227,12 @@ export const deployToFunction = async (
 
   // tslint:disable-next-line:no-non-null-assertion
   const siteTarget = options.target ?? context.target!.project;
+
+  if (fsHost.existsSync(functionsPackageJsonPath)) {
+    execSync(`npm --prefix ${functionsOut} install`);
+  } else {
+    console.error(`No package.json exists at ${functionsOut}`);
+  }
 
   if (options.preview) {
 
@@ -280,15 +289,14 @@ export const deployToCloudRun = async (
     );
   }
 
-  const staticOut = staticBuildOptions.outputPath;
-  const serverOut = serverBuildOptions.outputPath;
+  const staticOut = join(workspaceRoot, staticBuildOptions.outputPath);
+  const serverOut = join(workspaceRoot, serverBuildOptions.outputPath);
 
-  // TODO pull these from firebase config
-  const cloudRunOut = options.outputPath || staticBuildOptions.outputPath.replace('/browser', '/run');
+  const cloudRunOut = options.outputPath ? join(workspaceRoot, options.outputPath) : join(dirname(serverOut), 'run');
   const serviceId = options.functionName || DEFAULT_FUNCTION_NAME;
 
-  const newStaticOut = join(cloudRunOut, staticOut);
-  const newServerOut = join(cloudRunOut, serverOut);
+  const newStaticOut = join(cloudRunOut, staticBuildOptions.outputPath);
+  const newServerOut = join(cloudRunOut, serverBuildOptions.outputPath);
 
   // This is needed because in the server output there's a hardcoded dependency on $cwd/dist/browser,
   // This assumes that we've deployed our application dist directory and we're running the server
@@ -298,7 +306,7 @@ export const deployToCloudRun = async (
   fsHost.copySync(staticOut, newStaticOut);
   fsHost.copySync(serverOut, newServerOut);
 
-  const packageJson = getPackageJson(context, workspaceRoot, options, join(serverOut, 'main.js'));
+  const packageJson = getPackageJson(context, workspaceRoot, options, join(serverBuildOptions.outputPath, 'main.js'));
   const nodeVersion = packageJson.engines.node;
 
   if (!satisfies(process.versions.node, nodeVersion.toString())) {
@@ -352,7 +360,7 @@ export const deployToCloudRun = async (
 
   // tslint:disable-next-line:no-non-null-assertion
   const siteTarget = options.target ?? context.target!.project;
-  
+
   // TODO deploy cloud run
   return await firebaseTools.deploy({
     only: `hosting:${siteTarget}`,

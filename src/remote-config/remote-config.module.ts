@@ -1,20 +1,25 @@
-import { NgModule, Optional, NgZone, InjectionToken, ModuleWithProviders } from '@angular/core';
+import { NgModule, Optional, NgZone, InjectionToken, ModuleWithProviders, Injector, APP_INITIALIZER } from '@angular/core';
 import { RemoteConfig as FirebaseRemoteConfig } from 'firebase/remote-config';
-import { ɵmemoizeInstance, ɵgetDefaultInstanceOf, ɵAngularFireSchedulers, VERSION } from '@angular/fire';
+import { ɵgetDefaultInstanceOf, ɵAngularFireSchedulers, VERSION, ɵisRemoteConfigSupportedFactory } from '@angular/fire';
 import { RemoteConfig, RemoteConfigInstances, REMOTE_CONFIG_PROVIDER_NAME } from './remote-config';
 import { FirebaseApps, FirebaseApp } from '@angular/fire/app';
 import { registerVersion } from 'firebase/app';
 
 export const PROVIDED_REMOTE_CONFIG_INSTANCES = new InjectionToken<RemoteConfig[]>('angularfire2.remote-config-instances');
 
-export function defaultRemoteConfigInstanceFactory(provided: FirebaseRemoteConfig[]|undefined, defaultApp: FirebaseApp) {
+export function defaultRemoteConfigInstanceFactory(
+  provided: FirebaseRemoteConfig[]|undefined,
+  defaultApp: FirebaseApp,
+) {
+  if (!ɵisRemoteConfigSupportedFactory.sync()) { return null; }
   const defaultRemoteConfig = ɵgetDefaultInstanceOf<FirebaseRemoteConfig>(REMOTE_CONFIG_PROVIDER_NAME, provided, defaultApp);
-  return new RemoteConfig(defaultRemoteConfig);
+  return defaultRemoteConfig && new RemoteConfig(defaultRemoteConfig);
 }
 
-export function remoteConfigInstanceFactory(fn: () => FirebaseRemoteConfig) {
-  return (zone: NgZone) => {
-    const remoteConfig = ɵmemoizeInstance<FirebaseRemoteConfig>(fn, zone);
+export function remoteConfigInstanceFactory(fn: (injector: Injector) => FirebaseRemoteConfig) {
+  return (zone: NgZone, injector: Injector) => {
+    if (!ɵisRemoteConfigSupportedFactory.sync()) { return null; }
+    const remoteConfig = zone.runOutsideAngular(() => fn(injector));
     return new RemoteConfig(remoteConfig);
   };
 }
@@ -39,6 +44,11 @@ const DEFAULT_REMOTE_CONFIG_INSTANCE_PROVIDER = {
   providers: [
     DEFAULT_REMOTE_CONFIG_INSTANCE_PROVIDER,
     REMOTE_CONFIG_INSTANCES_PROVIDER,
+    {
+      provide: APP_INITIALIZER,
+      useValue: ɵisRemoteConfigSupportedFactory.async,
+      multi: true,
+    },
   ]
 })
 export class RemoteConfigModule {
@@ -47,7 +57,7 @@ export class RemoteConfigModule {
   }
 }
 
-export function provideRemoteConfig(fn: () => FirebaseRemoteConfig): ModuleWithProviders<RemoteConfigModule> {
+export function provideRemoteConfig(fn: () => FirebaseRemoteConfig, ...deps: any[]): ModuleWithProviders<RemoteConfigModule> {
   return {
     ngModule: RemoteConfigModule,
     providers: [{
@@ -56,8 +66,10 @@ export function provideRemoteConfig(fn: () => FirebaseRemoteConfig): ModuleWithP
       multi: true,
       deps: [
         NgZone,
+        Injector,
         ɵAngularFireSchedulers,
         FirebaseApps,
+        ...deps,
       ]
     }]
   };

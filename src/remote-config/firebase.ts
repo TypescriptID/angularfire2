@@ -15,6 +15,10 @@ import {
   setLogLevel as _setLogLevel
 } from 'firebase/remote-config';
 
+export {
+  isSupported
+} from './overrides';
+
 export const activate = ɵzoneWrap(_activate, true);
 export const ensureInitialized = ɵzoneWrap(_ensureInitialized, true);
 export const fetchAndActivate = ɵzoneWrap(_fetchAndActivate, true);

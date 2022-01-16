@@ -47,7 +47,7 @@ In order to better support the tree-shakability introduced in Firebase v9 & to r
         provideFirebaseApp(() => initializeApp(config)),
         provideFirestore(() => {
             const firestore = getFirestore();
-            connectEmulator(firestore, 'localhost', 8080);
+            connectFirestoreEmulator(firestore, 'localhost', 8080);
             enableIndexedDbPersistence(firestore);
             return firestore;
         }),
@@ -103,7 +103,7 @@ In AngularFire v7 working with multiple instances was difficult, in the new SDK 
 
 ```ts
 import { FirebaseApp, FirebaseApps } from '@angular/fire/app';
-import { Storage, StorageIsntances } from '@angular/fire/storage';
+import { Storage, StorageInstances } from '@angular/fire/storage';
 
 export class Foo {
     constructor(
