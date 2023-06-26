@@ -4,8 +4,8 @@ import { existsSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import { copySync, removeSync } from 'fs-extra';
 import { dirname, join } from 'path';
 import { execSync, spawn, SpawnOptionsWithoutStdio } from 'child_process';
-import { defaultFunction, defaultPackage, DEFAULT_FUNCTION_NAME, dockerfile } from './functions-templates';
-import { satisfies } from 'semver';
+import { defaultFunction, functionGen2, defaultPackage, DEFAULT_FUNCTION_NAME, dockerfile } from './functions-templates';
+import { satisfies, lt } from 'semver';
 import open from 'open';
 import { SchematicsException } from '@angular-devkit/schematics';
 import { firebaseFunctionsDependencies } from '../versions.json';
@@ -79,7 +79,7 @@ const deployToHosting = async (
     await firebaseTools.serve({
       port: DEFAULT_EMULATOR_PORT,
       host: DEFAULT_EMULATOR_HOST,
-      targets: [`hosting:${siteTarget}`],
+      only: `hosting:${siteTarget}`,
       nonInteractive: true,
       projectRoot: workspaceRoot,
     });
@@ -88,9 +88,11 @@ const deployToHosting = async (
       type: 'confirm',
       name: 'deployProject',
       message: 'Would you like to deploy your application to Firebase Hosting?'
-    });
+    }) as { deployProject: boolean };
 
     if (!deployProject) { return; }
+
+    process.env.FIREBASE_FRAMEWORKS_SKIP_BUILD = 'true';
 
   }
 
@@ -211,10 +213,17 @@ export const deployToFunction = async (
     JSON.stringify(packageJson, null, 2)
   );
 
-  fsHost.writeFileSync(
-    join(functionsOut, 'index.js'),
-    defaultFunction(serverBuildOptions.outputPath, options, functionName)
-  );
+  if (options.CF3v2) {
+    fsHost.writeFileSync(
+      join(functionsOut, 'index.js'),
+      functionGen2(serverBuildOptions.outputPath, options, functionName)
+    );
+  } else {
+    fsHost.writeFileSync(
+      join(functionsOut, 'index.js'),
+      defaultFunction(serverBuildOptions.outputPath, options, functionName)
+    );
+  }
 
   if (!options.prerender) {
     try {
@@ -244,11 +253,11 @@ export const deployToFunction = async (
       projectRoot: workspaceRoot,
     });
 
-    const { deployProject} = await inquirer.prompt({
+    const { deployProject } = await inquirer.prompt({
       type: 'confirm',
       name: 'deployProject',
       message: 'Would you like to deploy your application to Firebase Hosting & Cloud Functions?'
-    });
+    }) as { deployProject: boolean };
 
     if (!deployProject) { return; }
   }
@@ -381,14 +390,18 @@ export default async function deploy(
   options: DeployBuilderOptions,
   firebaseToken?: string,
 ) {
-  if (!firebaseToken) {
+  if (!firebaseToken && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     await firebaseTools.login();
     const user = await firebaseTools.login({ projectRoot: context.workspaceRoot });
     console.log(`Logged into Firebase as ${user.email}.`);
   }
 
-  if (prerenderBuildTarget) {
+  if (!firebaseToken && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    await spawnAsync(`gcloud auth activate-service-account --key-file ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
+    console.log(`Using Google Application Credentials.`);
+  }
 
+  if (prerenderBuildTarget) {
     const run = await context.scheduleTarget(
       targetFromTargetString(prerenderBuildTarget.name),
       prerenderBuildTarget.options
@@ -420,6 +433,7 @@ export default async function deploy(
     await Promise.all(builders);
   }
 
+
   try {
     await firebaseTools.use(firebaseProject, {
       project: firebaseProject,
@@ -450,7 +464,7 @@ export default async function deploy(
 
   firebaseTools.logger.logger.add(logger);
 
-  if (serverBuildTarget) {
+  if ((!options.version || options.version < 2) && serverBuildTarget) {
     if (options.ssr === 'cloud-run') {
       await deployToCloudRun(
         firebaseTools,

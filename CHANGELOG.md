@@ -1,3 +1,29 @@
+<a name="7.4.0"></a>
+# [7.4.0](https://github.com/angular/angularfire/compare/7.3.0...7.4.0) (2022-06-04)
+
+### Misc.
+
+* **core:** [**Internet Explorer support has been dropped**](https://firebase.blog/posts/2022/05/firebase-js-sdk-drops-support-for-internet-explorer)
+* **core:** Bumped the Firebase dependency to ^9.8, wrapping new APIs
+* **core:** mark Angular 14 as an compatable peer ([#3230](https://github.com/angular/angularfire/issues/3230)) ([3c3a343](https://github.com/angular/angularfire/commit/3c3a343))
+
+### Bug Fixes
+
+* **core:** added missing injector input signatures ([#3191](https://github.com/angular/angularfire/issues/3191)) ([88796bc](https://github.com/angular/angularfire/commit/88796bc))
+
+<a name="7.3.0"></a>
+# [7.3.0](https://github.com/angular/angularfire/compare/7.2.1...7.3.0) (2022-03-23)
+
+### Features
+
+* **storage:** adding wrappers for getBlob, getBytes, and getStream ([#3159](https://github.com/angular/angularfire/pull/3159))
+
+### Misc.
+
+* **core:** update firebase dependency  ([#3159](https://github.com/angular/angularfire/pull/3159))
+* **core:** mark firebase-tools 10 as compatible ([#3159](https://github.com/angular/angularfire/pull/3159))
+* **firestore-protos:** no longer needed ([#3159](https://github.com/angular/angularfire/pull/3159))
+
 <a name="7.2.1"></a>
 # [7.2.1](https://github.com/angular/angularfire/compare/7.2.0...7.2.1) (2022-02-10)
 

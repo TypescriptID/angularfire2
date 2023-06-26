@@ -49,7 +49,7 @@ describe('AngularFirestoreCollectionGroup', () => {
   });
 
   afterEach(() => {
-    app.delete().catch(() => undefined);
+    afs.firestore.disableNetwork();
   });
 
   describe('valueChanges()', () => {
@@ -353,6 +353,7 @@ describe('AngularFirestoreCollectionGroup', () => {
 
     it('should be able to filter snapshotChanges() types - removed', done => {
       (async () => {
+
         const ITEMS = 10;
         const { ref, stocks, names } = await collectionHarness(afs, ITEMS);
 
