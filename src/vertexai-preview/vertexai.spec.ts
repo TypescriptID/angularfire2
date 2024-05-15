@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { FirebaseApp, getApp, initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { Functions, connectFunctionsEmulator, getFunctions, provideFunctions } from '@angular/fire/functions';
+import { VertexAI, getVertexAI, provideVertexAI } from '@angular/fire/vertexai-preview';
 import { COMMON_CONFIG } from '../test-config';
 import { rando } from '../utils';
 
-describe('Functions', () => {
+describe('VertexAI', () => {
   let app: FirebaseApp;
-  let functions: Functions;
-  let providedFunctions: Functions;
+  let vertexAI: VertexAI;
+  let providedVertexAI: VertexAI;
   let appName: string;
 
   describe('single injection', () => {
@@ -17,21 +17,20 @@ describe('Functions', () => {
         TestBed.configureTestingModule({
             providers: [
                 provideFirebaseApp(() => initializeApp(COMMON_CONFIG, appName)),
-                provideFunctions(() => {
-                    providedFunctions = getFunctions(getApp(appName));
-                    connectFunctionsEmulator(providedFunctions, 'localhost', 5001);
-                    return providedFunctions;
+                provideVertexAI(() => {
+                    providedVertexAI = getVertexAI(getApp(appName));
+                    return providedVertexAI;
                 }),
             ],
         });
         app = TestBed.inject(FirebaseApp);
-        functions = TestBed.inject(Functions);
+        vertexAI = TestBed.inject(VertexAI);
     });
 
     it('should be injectable', () => {
-        expect(providedFunctions).toBeTruthy();
-        expect(functions).toEqual(providedFunctions);
-        expect(functions.app).toEqual(app);
+        expect(providedVertexAI).toBeTruthy();
+        expect(vertexAI).toEqual(providedVertexAI);
+        expect(vertexAI.app).toEqual(app);
     });
 
   });

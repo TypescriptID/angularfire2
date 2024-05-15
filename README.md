@@ -1,40 +1,35 @@
 
 # AngularFire
-The official [Angular](https://angular.io/) library for [Firebase](https://firebase.google.com/).
+
+AngularFire smooths over the rough edges an Angular developer might encounter when implementing the framework-agnostic
+[Firebase JS SDK](https://github.com/firebase/firebase-js-sdk) & aims to provide a more natural developer experience
+by conforming to Angular conventions.
 
 <strong><pre>ng add @angular/fire</pre></strong>
 
-_Note: If you want to ng add AngularFire and will be using Hosting/Cloud Functions, you need to configure the 
-Firebase CLI first so that you are logged in for the schematics that are run as part of `ng add @angular/fire`.
-Follow [this guide](docs/install-firebase-tools.md) to have the Firebase CLI walk you through the setup._
-
-AngularFire smooths over the rough edges an Angular developer might encounter when implementing the framework-agnostic 
-[Firebase JS SDK](https://github.com/firebase/firebase-js-sdk) & aims to provide a more natural developer experience 
-by conforming to Angular conventions.
-
-- **Dependency injection** - Provide and Inject Firebase services in your components
-- **Zone.js wrappers** - Stable zones allow proper functionality of service workers, forms, SSR, and pre-rendering
-- **Observable based** - Utilize RxJS rather than callbacks for realtime streams
+- **Dependency injection** - Provide and Inject Firebase services in your components.
+- **Zone.js wrappers** - Stable zones allow proper functionality of service workers, forms, SSR, and pre-rendering.
+- **Observable based** - Utilize RxJS rather than callbacks for real-time streams.
 - **NgRx friendly API** - Integrate with NgRx using AngularFire's action based APIs.
-- **Lazy-loading** - AngularFire dynamically imports much of Firebase, reducing time to load your app
-- **Deploy schematics** - Get your Angular application deployed on Firebase Hosting with a single command
-- **Google Analytics** - Zero-effort Angular Router awareness in Google Analytics
-- **Router Guards** - Guard your Angular routes with built-in Firebase Authentication checks
+- **Lazy-loading** - AngularFire dynamically imports much of Firebase, reducing the time to load your app.
+- **Deploy schematics** - Get your Angular application deployed on Firebase Hosting with a single command.
+- **Google Analytics** - Zero-effort Angular Router awareness in Google Analytics.
+- **Router Guards** - Guard your Angular routes with built-in Firebase Authentication checks.
 
 ## Example use
 
 ```ts
-import { provideFirebaseApp, getApp, initializeApp } from '@angular/fire/app';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 
-@NgModule({
-  imports: [
+export const appConfig: ApplicationConfig = {
+  providers: [
     provideFirebaseApp(() => initializeApp({ ... })),
     provideFirestore(() => getFirestore()),
+    ...
   ],
   ...
 })
-export class AppModule { }
 ```
 
 ```ts
@@ -49,11 +44,14 @@ interface Item {
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   template: `
   <ul>
-    <li *ngFor="let item of item$ | async">
-      {{ item.name }}
-    </li>
+    @for (item of (item$ | async); track item) {
+      <li>
+        {{ item.name }}
+      </li>
+    }
   </ul>
   `
 })
@@ -63,36 +61,14 @@ export class AppComponent {
 
   constructor() {
     const itemCollection = collection(this.firestore, 'items');
-    this.item$ = collectionData(itemCollection);
+    this.item$ = collectionData<Item>(itemCollection);
   }
 }
 ```
 
-## Compatibility
-
-### Angular and Firebase versions
-
-AngularFire doesn't follow Angular's versioning as Firebase also has breaking changes throughout the year. Instead we try to maintain compatibility with both Firebase and Angular majors for as long as possible, only breaking when we need to support a new major of one or the other.
-
-| Angular | Firebase | AngularFire  |
-| --------|----------|--------------|
-| 16      | 9        | ^7.6         |
-| 15      | 9        | ^7.5         |
-| 14      | 9        | ^7.4         |
-| 13      | 9        | ^7.2         |
-| 12      | 9        | ^7.0         |
-| 12      | 7,8      | ^6.1.5       |
-| 11      | 7,8      | ^6.1         |
-| 10      | 8        | ^6.0.4       |
-| 10      | 7        | ^6.0.3       |
-| 9       | 8        | ^6.0.4       |
-| 9       | 7        | ^6.0         |
-
-<sub>Version combinations not documented here __may__ work but are untested and you will see NPM peer warnings.</sub>
-
 ### Polyfills
 
-Neither AngularFire or Firebase ship with polyfills. To have compatibility across as wide-range of environments we suggest the following polyfills be added to your application:
+Neither AngularFire nor Firebase ship with polyfills. To have compatibility across a wide-range of environments, we suggest the following polyfills be added to your application:
 
 | API | Environments | Suggested Polyfill | License |
 |-----|--------------|--------------------|---------|
@@ -123,11 +99,11 @@ We have three sample apps in this repository:
 
 Get help on our [Q&A board](https://github.com/angular/angularfire/discussions?discussions_q=category%3AQ%26A), the official [Firebase Mailing List](https://groups.google.com/forum/#!forum/firebase-talk), the [Firebase Community Slack](https://firebase.community/) (`#angularfire2`), the [Angular Community Discord](http://discord.gg/angular) (`#firebase`), [Gitter](https://gitter.im/angular/angularfire2), the [Firebase subreddit](https://www.reddit.com/r/firebase), or [Stack Overflow](https://stackoverflow.com/questions/tagged/angularfire2).
 
-> **NOTE:** AngularFire is maintained by Googlers but is not a supported Firebase product. Questions on the mailing list and issues filed here are answered on a <strong>best-effort basis</strong> by maintainers and other community members. If you are able to reproduce a problem with Firebase <em>outside of AngularFire's implementation</em>, please [file an issue on the Firebase JS SDK](https://github.com/firebase/firebase-js-sdk/issues) or reach out to the personalized [Firebase support channel](https://firebase.google.com/support/).
+> **NOTE:** While relatively stable, AngularFire is a [developer preview](https://angular.io/guide/releases#developer-preview) and is subject to change before general availability. Questions on the mailing list and issues filed here are answered on a <strong>best-effort basis</strong> by maintainers and other community members. If you are able to reproduce a problem with Firebase <em>outside of AngularFire's implementation</em>, please [file an issue on the Firebase JS SDK](https://github.com/firebase/firebase-js-sdk/issues) or reach out to the personalized [Firebase support channel](https://firebase.google.com/support/).
 
 ## Developer Guide
 
-This developer guide assimes you're using the new tree-shakable AngularFire API, [if you're looking for the compatability API you can find the documentation here](docs/compat.md).
+This developer guide assumes you're using the new tree-shakable AngularFire API, [if you're looking for the compatibility API you can find the documentation here](docs/compat.md).
 
 [See the v7 upgrade guide for more information on this change.](docs/version-7-upgrade.md).
 
@@ -215,9 +191,3 @@ import { } from '@angular/fire/app-check';
 </td>
   </tr>
 </table>
-
-### Deploying your site
-
-* Deploy to Firebase Hosting
-* Angular Universal: Deploy to Cloud Functions
-* Angular Universal: Deploy to Cloud Run
